@@ -14,10 +14,10 @@ const serviceAccount = require("./config/serviceAccount.json");
 
 const admin = firebase_admin.initializeApp({
   credential: firebase_admin.credential.cert(serviceAccount),
-  databaseURL:
-    "https://meribilty-331311-default-rtdb.asia-southeast1.firebasedatabase.app/",
-  storageBucket: "meribilty-331311.appspot.com",
 });
+
+
+
 
 // Initialize The App
 const app = express();
@@ -33,36 +33,46 @@ app.use(fileUpload());
 // --------  Middlewares  --------
 const middlewares = require("./middleware/index");
 
-// Admin
-app.use("/admin", require("./api/admin"));
 
-// Routes
-app.use("/api", require("./api/api"));
 
-// Auth
-// Authentication Apis
-// middlewares.checkApiKey
-app.use("/auth/user", require("./api/auth/user"));
-app.use("/auth/pro", require("./api/auth/pro"));
-app.use("/auth/driver", require("./api/auth/driver"));
-app.use("/auth/vendor", require("./api/auth/vendor"));
 
-// SAME CITY MOVEMENT
-app.use("/scm", require("./api/requests/scm"));
-app.use("/ppl", require("./api/requests/ppl"));
 
-// Driver App
-app.use("/driver", require("./api/driver"));
+app.get('/', (req,res) => { 
+   res.json({
+     message: "running"
+   })
+})
 
-// Chat
-app.use("/chat", require("./api/chat/chat"));
+app.post('/', (req,res) => { 
+  res.json({
+    message: "running"
+  })
+})
+
+
+// Authentication 
+app.use("/auth", require("./api/authentication/auth"));
+
+// Profile
+app.use("/profile", require("./api/profile/profile"));
+
+// Wallet
+app.use("/wallet", require("./api/wallet/wallet"));
+
+// Brand
+app.use("/brand", require("./api/brand/brand"));
+
+// Survey
+app.use("/survey", require("./api/survey/survey"));
+
+// Admin 
+app.use("/admin", require("./api/adminpanel/admin"));
+
+
 
 app.use(middlewares.notFound);
 app.use(middlewares.errorHandler);
 
-// Tasks
-require("./tasks/pplRequests");
-// require("./tasks/invoice");
-// require("./functions/cronjobs/email_jobs");
+
 
 module.exports = app;
