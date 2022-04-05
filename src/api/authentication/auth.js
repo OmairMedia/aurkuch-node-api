@@ -1,41 +1,64 @@
 const express = require('express');
 const router = express.Router();
 const admin = require('firebase-admin');
-const { userRef } = require('../../db/ref');
+const { userRef, walletRef } = require('../../db/ref');
 const bcrypt = require("bcrypt-nodejs");
 const saltRounds = 10;
+const { body, validationResult } = require("express-validator");
+
 
 
 
 // Register User 
-router.post('/register', 
+router.post('/register',
+body("fullname").isString().withMessage("fullname is invalid !"),
+body("email").isEmail().withMessage("email is invalid !"),
+body("phone").isMobilePhone().withMessage("phone is invalid !"),
+body("password").isLength({ min: 6 }).withMessage("password must be greater than 6 characters !"),
+body('confirmpassword').custom((value, { req }) => {
+    if (value !== req.body.password) {
+      throw new Error('Password confirmation does not match password');
+    } else {
+         // Indicates the success of this synchronous custom validator
+       return true;
+    }
+    }),
+    // Validator
+    (req, res, next) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+        } else {
+        next();
+        }
+    },
     // Check User 
-    (req,res,next) => {
+    (req, res, next) => {
         const params = req.body;
 
         userRef.doc(params.email).get().then((doc) => {
-            if(doc.exists){
+            if (doc.exists) {
 
                 res.json({
-                    status:false,
+                    status: false,
                     error: 'User Already Exists With This Email !'
                 })
 
             } else {
-               
+
                 next();
-                
+
             }
-                
-        }).catch((err)=>{
+
+        }).catch((err) => {
             res.json({
-                status:false,
+                status: false,
                 error: err
             })
         })
     },
     // Register User 
-    (req,res) => {
+    (req, res) => {
         const params = req.body;
 
 
@@ -63,31 +86,44 @@ router.post('/register',
                     channelSubscribed: false,
                     type: 'user'
                 })
-                .then(() => {     
-                    res.json({
-                        status:true,
-                        message: "User successfully created!"
+                    .then(() => {
+                        // Create Wallet
+                        walletRef.doc(params.email).set({
+                            id: userRecord.uid,
+                            amount: 0,
+                            transactions: [],
+                            created: admin.firestore.FieldValue.serverTimestamp(),
+                        }).then(() => {
+                            res.json({
+                                status: true,
+                                message: "User successfully created!"
+                            })
+                        }).catch((err) => {
+                            res.json({
+                                status:false,
+                                error: err
+                            })
+                        })
                     })
-                })
-                .catch((error) => {
-                    
-                    res.json({
-                        status:false,
-                        message: error
-                    })
-                });
+                    .catch((error) => {
+
+                        res.json({
+                            status: false,
+                            message: error
+                        })
+                    });
             })
             .catch((error) => {
                 res.json({
-                    status:false,
+                    status: false,
                     message: error
                 })
-            });   
+            });
     }
 )
 
 // Create Admin
-router.post('/create_admin', (req,res) => {
+router.post('/create_admin', (req, res) => {
     const params = req.body;
 
     const salt = bcrypt.genSaltSync(saltRounds);
@@ -102,20 +138,20 @@ router.post('/create_admin', (req,res) => {
         disabled: false,
         type: 'admin'
     })
-    .then(() => {
-        console.log("Document successfully written!");
-        res.json({
-            message: "Document successfully written!"
+        .then(() => {
+            console.log("Document successfully written!");
+            res.json({
+                message: "Document successfully written!"
+            })
         })
-    })
-    .catch((error) => {
-        console.error("Error writing document: ", error);
-        res.json({
-            message: error
-        })
-    });
+        .catch((error) => {
+            console.error("Error writing document: ", error);
+            res.json({
+                message: error
+            })
+        });
 
-    
+
     // admin.auth()
     // .createUser({
     //     email: 'admin@aurkuch.com',
