@@ -1,7 +1,6 @@
 const admin = require("firebase-admin");
 const db = admin.firestore();
 
-
 // Authentication
 const userRef = db.collection("users");
 
@@ -14,18 +13,21 @@ const walletRef = db.collection("wallets");
 // Brand
 const brandRef = db.collection("brands");
 
+// Brand Categories
+const brandCategoriesRef = db.collection("brand_categories");
+
 // Survey
 const surveyRef = db.collection("surveys");
 
 // Settings
 const settingsRef = db.collection("settings");
 
-
 module.exports = {
-    userRef,
-    profileRef,
-    walletRef,
-    brandRef,
-    surveyRef,
-    settingsRef
+  userRef,
+  profileRef,
+  walletRef,
+  brandRef,
+  surveyRef,
+  settingsRef,
+  brandCategoriesRef,
 };
