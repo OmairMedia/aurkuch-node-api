@@ -93,9 +93,13 @@ router.post(
               .doc(params.email)
               .set({
                 id: userRecord.uid,
+                email: params.email,
+                fullname: params.fullname,
                 amount: 0,
                 transactions: [],
                 created: admin.firestore.FieldValue.serverTimestamp(),
+                blocked:false,
+                lastUpdated: null
               })
               .then(() => {
                 res.json({
