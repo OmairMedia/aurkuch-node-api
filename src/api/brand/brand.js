@@ -169,6 +169,40 @@ router.post(
 );
 
 
+// {
+//   "id": "",
+//   "name": "",
+//   "url": "",
+//   "thumbnail": ""
+// }
+router.post(
+  "/add_video_to_brand",
+  // Create Brand
+  (req,res,next) => {
+    const params = req.body;  
+
+    let videodata = {
+      name: params.name,
+      url: params.url,
+      thumbnail: params.thumbnail || "",
+      created: admin.firestore.FieldValue.serverTimestamp(),
+    }
+
+    brandRef.doc(params.id).collection('videos').add(videodata).then(()=>{
+      res.json({
+        status:true,
+        message: "Video Added Successfully"
+      })
+    }).catch((err)=>{
+      res.json({
+        status:false,
+        message: err
+      })
+    })
+  }
+);
+
+
 // Get Brands
 router.get('/get_brands', (req,res) => {
   const params = req.body;
@@ -183,6 +217,35 @@ router.get('/get_brands', (req,res) => {
         id: doc.id,
         ...doc.data()
       })
+    })
+
+    res.json({
+      status:true,
+      data: data
+    })
+    
+  }).catch((err)=>{
+    res.json({
+      status:false,
+      message:err
+    })
+  })
+})
+
+// Get Brands
+router.get('/get_single_brand_videos', (req,res) => {
+  const params = req.body;
+
+  brandRef.doc(params.id).collection('videos').get().then((querySnapshot) => {
+
+    let data = [];
+
+    querySnapshot.forEach((doc) => {
+      data.push( {
+        id: doc.id,
+        ...doc.data()
+      }
+       )
     })
 
     res.json({
