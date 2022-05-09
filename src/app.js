@@ -62,8 +62,14 @@ app.use("/wallet", require("./api/wallet/wallet"));
 // Brand
 app.use("/brand", require("./api/brand/brand"));
 
+// Video
+app.use("/video", require("./api/videos/videos"));
+
 // Survey
 app.use("/survey", require("./api/survey/survey"));
+
+// Settings
+app.use("/settings", require("./api/settings/settings"));
 
 // Admin 
 app.use("/admin", require("./api/adminpanel/admin"));

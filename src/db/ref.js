@@ -13,6 +13,9 @@ const walletRef = db.collection("wallets");
 // Brand
 const brandRef = db.collection("brands");
 
+// Brand
+const watchRef = db.collection("videos");
+
 // Brand Categories
 const brandCategoriesRef = db.collection("brand_categories");
 
@@ -30,4 +33,5 @@ module.exports = {
   surveyRef,
   settingsRef,
   brandCategoriesRef,
+  watchRef
 };

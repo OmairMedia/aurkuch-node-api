@@ -37,7 +37,7 @@ router.post(
     const params = req.body;
 
     userRef
-      .doc(params.email)
+      .where("email", "==", params.email)
       .get()
       .then((doc) => {
         if (doc.exists) {
@@ -74,7 +74,7 @@ router.post(
         console.log("Successfully created new user:", userRecord.uid);
 
         userRef
-          .doc(params.email)
+          .doc(userRecord.uid)
           .set({
             id: userRecord.uid,
             email: params.email,
@@ -90,7 +90,7 @@ router.post(
           .then(() => {
             // Create Wallet
             walletRef
-              .doc(params.email)
+              .doc(userRecord.uid)
               .set({
                 id: userRecord.uid,
                 email: params.email,
