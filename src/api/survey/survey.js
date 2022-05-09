@@ -9,8 +9,6 @@ const { body, validationResult } = require("express-validator");
 
 // {
 //   "name": "",
-//   "": "",
-//   "brand_id": "",
 // }
 
 router.post('/add-survey', (req,res) => {
@@ -40,7 +38,10 @@ router.post('/add-survey', (req,res) => {
 // Add Questions To Survey
 
 // {
-//   "survey_id": "",
+    // "question": "what is the name of the national sport of pakistan ?",
+    // "options": ["cricket","hockey","football","tennis"],
+    // "correctAnswer": "cricket",
+    // "survey_id": "FkDps5Tmnmhj0GfAXOE1"
 // }
 
 router.post('/add-question-to-survey', (req,res) => {
