@@ -5,6 +5,9 @@ const { userRef, walletRef, brandRef,  brandCategoriesRef } = require("../../db/
 const { body, validationResult } = require("express-validator");
 const QRCode = require('qrcode')
 
+
+
+
 // Create Categories
 // {
 //   "name": ""

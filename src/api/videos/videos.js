@@ -115,7 +115,7 @@ router.post('/user_watched',
      })
   },
   // Get Currect User Wallet
-    (req,res,next) => {
+  (req,res,next) => {
         const params = req.body;
 
         //   Get Current Wallet Amount
@@ -129,7 +129,7 @@ router.post('/user_watched',
             error: err
         })
         })
-    },
+  },
   // Update User Wallet
   (req,res,next) => {
     const params = req.body;
