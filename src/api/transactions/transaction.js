@@ -6,7 +6,6 @@ const { body, validationResult } = require("express-validator");
 
 
 
-// User Watched A Video (transaction created)
 
 
 

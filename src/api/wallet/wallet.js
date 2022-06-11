@@ -56,7 +56,7 @@ router.get('/get_wallets_datatable', (req,res) => {
 
 
 
-// TODO - Get User Wallet
+
 
 
 module.exports = router;

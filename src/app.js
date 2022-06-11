@@ -71,6 +71,9 @@ app.use("/survey", require("./api/survey/survey"));
 // Settings
 app.use("/settings", require("./api/settings/settings"));
 
+// Slider
+app.use("/slider", require("./api/promotionalSlider/slider"));
+
 // Admin 
 app.use("/admin", require("./api/adminpanel/admin"));
 

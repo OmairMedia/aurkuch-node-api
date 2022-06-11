@@ -25,6 +25,9 @@ const surveyRef = db.collection("surveys");
 // Settings
 const settingsRef = db.collection("settings");
 
+// Promotional Slider
+const sliderRef = db.collection("promotional_slider");
+
 module.exports = {
   userRef,
   profileRef,
@@ -33,5 +36,6 @@ module.exports = {
   surveyRef,
   settingsRef,
   brandCategoriesRef,
-  watchRef
+  watchRef,
+  sliderRef
 };
