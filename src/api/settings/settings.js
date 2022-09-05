@@ -3,6 +3,7 @@ const router = express.Router();
 const admin = require("firebase-admin");
 const { userRef, walletRef, brandRef,  brandCategoriesRef,watchRef,settingsRef } = require("../../db/ref");
 const { body, validationResult } = require("express-validator");
+const momenttimezone = require("moment-timezone");
 
 
 
@@ -13,7 +14,7 @@ router.post('/add-video-watch-amount', (req,res) => {
     
     let data = {
         amount: params.amount,
-        lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+        lastUpdated: momenttimezone.tz("Asia/Karachi").valueOf(),
     }
 
     settingsRef.doc('video-reward-amount').set(data).then(()=>{

@@ -1,41 +1,62 @@
 const admin = require("firebase-admin");
-const db = admin.firestore();
+const db = admin.database();
 
-// Authentication
-const userRef = db.collection("users");
-
-// Profile
-const profileRef = db.collection("profiles");
+// Users
+const userRef = db.ref("users");
 
 // Wallet
-const walletRef = db.collection("wallets");
+const walletRef = db.ref("wallets");
+
+// Tasks
+const tasksRef = db.ref("tasks");
+const tasksRecordsRef = db.ref("completed_tasks");
+const pendingTasksRef = db.ref("pending_tasks");
+const rejectedTasksRef = db.ref("rejected_tasks");
+const incompleteTasksRef = db.ref("incomplete_tasks");
+
 
 // Brand
-const brandRef = db.collection("brands");
+const brandRef = db.ref("brands");
 
 // Brand
-const watchRef = db.collection("videos");
+const watchRef = db.ref("videos");
 
 // Brand Categories
-const brandCategoriesRef = db.collection("brand_categories");
+const brandCategoriesRef = db.ref("brand_categories");
 
 // Survey
-const surveyRef = db.collection("surveys");
+const surveyRef = db.ref("surveys");
 
 // Settings
-const settingsRef = db.collection("settings");
+const settingsRef = db.ref("settings");
 
 // Promotional Slider
-const sliderRef = db.collection("promotional_slider");
+const sliderRef = db.ref("promotional_slider");
+
+// FCM Tokens
+const fcmRef = db.ref("fcm");
+
+// Notifications
+const notificationsRef = db.ref("notifications");
+
+// Tracking
+const trackingRef = db.ref("track");
 
 module.exports = {
   userRef,
-  profileRef,
   walletRef,
   brandRef,
   surveyRef,
   settingsRef,
   brandCategoriesRef,
   watchRef,
-  sliderRef
+  sliderRef,
+  fcmRef,
+  tasksRef,
+  tasksRecordsRef,
+  pendingTasksRef,
+  incompleteTasksRef,
+  notificationsRef,
+  rejectedTasksRef,
+  trackingRef
 };

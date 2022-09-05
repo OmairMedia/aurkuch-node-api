@@ -14,6 +14,7 @@ const serviceAccount = require("./config/serviceAccount.json");
 
 const admin = firebase_admin.initializeApp({
   credential: firebase_admin.credential.cert(serviceAccount),
+  databaseURL: "https://aurkuch-982e5-default-rtdb.asia-southeast1.firebasedatabase.app/",
 });
 
 
@@ -26,15 +27,13 @@ const app = express();
 app.use(morgan("dev"));
 app.use(helmet());
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 app.use(fileUpload());
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
 
 // --------  Middlewares  --------
 const middlewares = require("./middleware/index");
-
-
-
 
 
 app.get('/', (req,res) => { 
@@ -62,11 +61,6 @@ app.use("/wallet", require("./api/wallet/wallet"));
 // Brand
 app.use("/brand", require("./api/brand/brand"));
 
-// Video
-app.use("/video", require("./api/videos/videos"));
-
-// Survey
-app.use("/survey", require("./api/survey/survey"));
 
 // Settings
 app.use("/settings", require("./api/settings/settings"));
@@ -74,9 +68,27 @@ app.use("/settings", require("./api/settings/settings"));
 // Slider
 app.use("/slider", require("./api/promotionalSlider/slider"));
 
-// Admin 
-app.use("/admin", require("./api/adminpanel/admin"));
 
+// Users 
+app.use("/users", require("./api/users/users"));
+
+// FCM 
+app.use("/fcm", require("./api/fcm/fcm"));
+
+// Tasks 
+app.use("/tasks", require("./api/tasks/tasks"));
+
+
+
+
+// Video
+// app.use("/video", require("./api/videos/videos"));
+
+// Survey
+// app.use("/survey", require("./api/survey/survey"));
+
+// Admin 
+// app.use("/admin", require("./api/adminpanel/admin"));
 
 
 app.use(middlewares.notFound);

@@ -9,7 +9,7 @@ cloud_message = admin.messaging();
 
 // Exporting Functions Here
 module.exports = {
-  send_notification_to_single_user(notificationData, user) {
+  async send_notification_to_single_user(notificationData, user) {
     console.log(notificationData);
 
     cloud_message

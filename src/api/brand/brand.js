@@ -1,10 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const admin = require("firebase-admin");
-const { userRef, walletRef, brandRef,  brandCategoriesRef } = require("../../db/ref");
+const { userRef, walletRef, brandRef,  brandCategoriesRef,tasksRef } = require("../../db/ref");
 const { body, validationResult } = require("express-validator");
 const QRCode = require('qrcode')
-
+const momenttimezone = require("moment-timezone");
 
 
 
@@ -16,21 +16,24 @@ router.post("/create_category", (req, res) => {
   const params = req.body;
 
   // Add a new document with a generated id.
-  brandCategoriesRef
-    .add({
+  let newCategory = brandCategoriesRef.push();
+
+  newCategory
+    .set({
+      id: newCategory.key,
       name: params.name,
-      created: admin.firestore.FieldValue.serverTimestamp(),
+      created: momenttimezone.tz("Asia/Karachi").valueOf(),
     })
-    .then((docRef) => {
+    .then(() => {
       res.json({
         status: true,
         message: "Category Added Successfully",
       });
     })
-    .catch((error) => {
+    .catch((err) => {
       res.json({
         status: false,
-        message: error,
+        error: err,
       });
     });
 });
@@ -40,23 +43,23 @@ router.post("/create_category", (req, res) => {
 router.get('/get_categories', (req,res) => {
   const params = req.body;
 
-  brandCategoriesRef.get().then((querySnapshot) => {
-
-    let data = [];
-
-    querySnapshot.forEach((doc) => {
-      
-      data.push({
-        id: doc.id,
-        ...doc.data()
+  brandCategoriesRef.once('value', (snapshot) => {
+     if(snapshot.val()) {
+        let data = [];
+        snapshot.forEach((doc) => {
+          
+          data.push(doc.val())
+        })
+        res.json({
+          status:true,
+          data: data
+        })
+     } else {
+      res.json({
+        status:false,
+        data: []
       })
-    })
-
-    res.json({
-      status:true,
-      data: data
-    })
-    
+     }
   }).catch((err)=>{
     res.json({
       status:false,
@@ -151,7 +154,7 @@ router.post(
       thumbnail: params.thumbnail,
       qrcode: params.qrcode_url ? params.qrcode_url : false ,
       category: params.category,
-      created: admin.firestore.FieldValue.serverTimestamp(),
+      created: momenttimezone.tz("Asia/Karachi").valueOf(),
       discount: params.discount || false,
       discountFrom: params.discountFrom || true,
       discountTill: params.discountTill || false 
@@ -188,7 +191,7 @@ router.post(
       name: params.name,
       url: params.url,
       thumbnail: params.thumbnail || "",
-      created: admin.firestore.FieldValue.serverTimestamp(),
+      created: momenttimezone.tz("Asia/Karachi").valueOf(),
     }
 
     brandRef.doc(params.id).collection('videos').add(videodata).then(()=>{
@@ -206,34 +209,8 @@ router.post(
 );
 
 
-// Get Brands
-router.get('/get_brands', (req,res) => {
-  const params = req.body;
 
-  brandRef.get().then((querySnapshot) => {
 
-    let data = [];
-
-    querySnapshot.forEach((doc) => {
-      
-      data.push({
-        id: doc.id,
-        ...doc.data()
-      })
-    })
-
-    res.json({
-      status:true,
-      data: data
-    })
-    
-  }).catch((err)=>{
-    res.json({
-      status:false,
-      message:err
-    })
-  })
-})
 
 // Get Brands
 router.get('/get_single_brand_videos', (req,res) => {
@@ -266,44 +243,105 @@ router.get('/get_single_brand_videos', (req,res) => {
 
 // Get Brands For Table
 router.get('/get_brands_datatable', (req,res) => {
-  const params = req.params;
+  
+    const params = req.query;
+    let length;
+    let projects = [];
 
+    //   SORT , PAGINATION , SEARCH PARAMS
+    let email = params.email;
+    let sort = params.sort;
+    let page = parseInt(params.page) || 1;
+    let per_page = parseInt(params.per_page) || 4;
+    let search = params.search;
+    let filter = params.filter_by;
 
-  let sort = params.sort;
-  let page = params.page;
-  let per_page = params.per_page;
-  let search = params.search;
-  let from = params.from;
-  let to = params.to;
-  let total = params.total;   
-  let lastPage = params.lastPage;    
+    tasksRef.orderByChild('type').equalTo('app').once((snapshot) => {
+     if(snapshot.val()) { 
+      let data = [];
 
-
-
-  brandRef.get().then((querySnapshot) => {
-
-    let data = [];
-
-    querySnapshot.forEach((doc) => {
-      
-      data.push({
-        id: doc.id,
-        ...doc.data()
+      snapshot.forEach((doc) => {
+        
+        data.push({
+          id: doc.id,
+          ...doc.data()
+        })
       })
-    })
+  
+  
+      length = data.length;
+  
+      let from = (page - 1) * per_page + 1;
+      let to = from + per_page <= length ? from + per_page - 1 : length;
+      console.log("from -> ", from);
+      console.log("to -> ", to);
+      let current_page = page;
+      let last_page =
+        length % per_page == 0
+          ? length / per_page
+          : Math.floor(length / per_page) + 1;
+      console.log("last_page -> ", last_page);
+      let total = length;
+      let next_page_url;
+     
+      console.log("length -> ", length);
+  
+      // Sort if sort is passed
+      if (sort) {
+        data.sort((a, b) =>
+          a[sort] > b[sort] ? 1 : b[sort] > a[sort] ? -1 : 0
+        );
+      }
+  
+      // Search if search is passed
+      if (search) {
+        var lowSearch = search.toLowerCase();
+        data = data.filter((obj) =>
+          Object.values(obj).some((val) =>
+            String(val).toLowerCase().includes(lowSearch)
+          )
+        );
+        // projects = projects.filter((obj) => JSON.stringify(obj).toLowerCase().includes(search.toLowerCase()));
+      }
+  
+      
+      let sortedprojects = data.sort(function (a, b) {
+        return b.created - a.created;
+      });
+  
+      sortedprojects = sortedprojects.slice(from - 1, to);
+  
+  
+      let final = {
+        status: true,
+        total,
+        from,
+        to,
+        per_page,
+        current_page,
+        last_page,
+        items: sortedprojects,
+      }
+  
+      console.log('final -> ', final);
+  
+     
+  
+      res.json(final)
+     } else {
+      let final = {
+        status: true,
+        total: 0,
+        from : 0,
+        to: 0,
+        per_page: 0,
+        current_page :0,
+        last_page: 0,
+        items: [],
+      }
 
-    res.json({
-      status:true,
-      data: data,
-      total: 20,
-      last_page: 4,
-      per_page: 5,
-      current_page: 1,
-      next_page_url: "https://api.coloredstrategies.com/cakes/fordatatable?sort=&page=2&per_page=5",
-      prev_page_url: "https://api.coloredstrategies.com/cakes/fordatatable?sort=&page=2&per_page=5",
-      from: 1,
-      to: 5,
-    })
+      res.json(final)
+     }
     
   }).catch((err)=>{
     res.json({
@@ -313,57 +351,38 @@ router.get('/get_brands_datatable', (req,res) => {
   })
 })
 
-// Get Categories For Table
-// router.get('/get_brands_datatable', (req,res) => {
-//   const params = req.params;
 
+router.post('/get_all_brands', (req,res) => {
+  const params = req.body;
+  
+  tasksRef.orderByChild('type').equalTo('app').once('value',(snapshot) => {
+    console.log('snapshot -> ',snapshot.val())
+   
+   if(snapshot.val()) {
+    let data = [];
 
-//   let sort = params.sort;
-//   let page = params.page;
-//   let per_page = params.per_page;
-//   let search = params.search;
-//   let from = params.from;
-//   let to = params.to;
-//   let total = params.total;   
-//   let lastPage = params.lastPage;    
+    snapshot.forEach((doc) => {
+      data.push(doc.val())
+    })
+    res.json({
+      status:true,
+      data: data
+    })
 
-
-
-//   brandRef.get().then((querySnapshot) => {
-
-//     let data = [];
-
-//     querySnapshot.forEach((doc) => {
-      
-//       data.push({
-//         id: doc.id,
-//         ...doc.data()
-//       })
-//     })
-
-//     res.json({
-//       status:true,
-//       data: data,
-//       total: 20,
-//       last_page: 4,
-//       per_page: 5,
-//       current_page: 1,
-//       next_page_url: "https://api.coloredstrategies.com/cakes/fordatatable?sort=&page=2&per_page=5",
-//       prev_page_url: "https://api.coloredstrategies.com/cakes/fordatatable?sort=&page=2&per_page=5",
-//       from: 1,
-//       to: 5,
-//     })
+   } else {
+    res.json({
+      status:true,
+      data: []
+    })
+   }
     
-//   }).catch((err)=>{
-//     res.json({
-//       status:false,
-//       message:err
-//     })
-//   })
-// })
-
-
-
+  }).catch((err)=>{
+    res.json({
+      status:false,
+      message:err
+    })
+  })
+})
 
 
 module.exports = router;

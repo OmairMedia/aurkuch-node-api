@@ -2,8 +2,10 @@ const express = require("express");
 const router = express.Router();
 const admin = require("firebase-admin");
 const { getStorage } = require('firebase-admin/storage');
-const { sliderRef } = require("../../db/ref");
+const { sliderRef , trackingRef, userRef} = require("../../db/ref");
 const { body, validationResult } = require("express-validator");
+const momenttimezone = require("moment-timezone");
+
 
 
 const { Storage } = require("@google-cloud/storage");
@@ -20,16 +22,17 @@ router.get("/get_images", (req, res) => {
   const params = req.body;
 
   sliderRef
-    .get()
-    .then((querySnapshot) => {
-      if (querySnapshot.docs) {
+    .once('value',(snapshot) => {
+      if (snapshot.val()) {
         let data = [];
-        querySnapshot.forEach((x) => {
-          data.push({
-            ...x,
-            id: x.id,
-          });
+        snapshot.forEach((x) => {
+          data.push(x.val());
         });
+
+        res.json({
+          status:true,
+          data:data
+        })
       } else {
         res.json({
           status: true,
@@ -47,6 +50,12 @@ router.get("/get_images", (req, res) => {
 
 // Edit Image
 router.post("/add_image", 
+// Check Image 
+(req,res,next) => {
+  console.log('files -> ',req.files);
+  console.log('Body -> ',req.body);
+
+},
 // Check Image
 async (req,res,next) => {
     const params = req.body;
@@ -136,6 +145,7 @@ async (req,res,next) => {
       id: key,
       index: params.count,
       url: params.imageurl[0].url,
+      added: momenttimezone.tz("Asia/Karachi").valueOf()
     })
     .then((docRef) => {
       console.log("Document written with ID: ", docRef.id);
@@ -166,8 +176,6 @@ async (req,res,next) => {
   //   })
   // })
 });
-
-
 
 // Remove Image
 router.post("/remove_image", 
@@ -234,7 +242,76 @@ async (req, res, next) => {
 
 });
 
+// Track Users
+router.post('/track_user', 
+// Get Image Data
+(req,res,next) => {
+   const body = req.body;
 
+   sliderRef.child(body.image_id).once('value', (snapshot) => {
+    if(snapshot.val()) {
+       let image = snapshot.val();
+       req.body.image = image;
+       next();
+    } else {
+       res.json({
+        status:false,
+        error: 'Image Not Found!'
+       })
+    }
+   })
+},
+// Get User Data 
+(req,res,next) => {
+  const body = req.body;
+
+  admin.auth().getUser(body.uid).then((userSnapshot)=>{
+    if(userSnapshot) {
+       let user = {
+        displayName: userSnapshot.displayName,
+        email: userSnapshot.email,
+        phone: userSnapshot.phoneNumber || ""
+       }
+
+       req.body.user= user;
+       next();
+    } else {
+      res.json({
+        status:false,
+        error:'User found error !'
+      })
+    }
+  }).catch((err)=>{
+    res.json({
+      status:false,
+      error:err
+    })
+  })
+},
+(req,res) => {
+  const body = req.body;
+
+  let newTrackRef = trackingRef.push();
+
+  trackingRef.child(`${body.uid}-${body.image_id}`).set({
+    ...body.image,
+    ...body.user,
+    id: newTrackRef.key,
+    uid: body.uid,
+    image_id: body.image_id,
+    viewed_on: momenttimezone.tz("Asia/Karachi").valueOf()
+  }).then(()=>{
+      res.json({
+        status:true,
+        message: 'tracked !'
+      })
+  }).catch((err)=>{
+      res.json({
+        status:false,
+        error:err
+      })
+  })
+})
 
 
 

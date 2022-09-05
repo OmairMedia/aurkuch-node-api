@@ -1,16 +1,16 @@
 const express = require("express");
 const router = express.Router();
 const admin = require("firebase-admin");
-const { userRef, walletRef, brandRef,  brandCategoriesRef,watchRef ,settingsRef} = require("../../db/ref");
+const { userRef, walletRef, brandRef,  brandCategoriesRef,watchRef ,settingsRef , tasksRef} = require("../../db/ref");
 const { body, validationResult } = require("express-validator");
+const momenttimezone = require("moment-timezone");
 
 
 
 // User Watched A Video ()
 // {
 //   "uid": "",
-//   "video_id": "",
-//   "brand_id": "",
+//   "task_id": "" 
 // }
 router.post('/user_watched',
 // Get User Data
@@ -19,11 +19,10 @@ router.post('/user_watched',
     const params = req.body;
 
     userRef
-      .doc(params.uid)
-      .get()
-      .then((doc) => {
-        if (doc.exists) {
-          req.body.user = doc.data();
+      .child(params.uid)
+      .once('value', (doc) => {
+        if (doc.val()) {
+          req.body.user = doc.val();
           next();
         } else {
             res.json({
@@ -43,17 +42,11 @@ router.post('/user_watched',
   (req, res, next) => {
     const params = req.body;
 
-    brandRef
-      .doc(params.brand_id)
-      .get()
-      .then((doc) => {
+    tasksRef
+      .child(params.task_id)
+      .once('value',(doc) => {
         if (doc.exists) {
-          req.body.brand = {
-              id: doc.id,
-              ...doc.data()
-          };
-          next();
-         
+          
         } else {
               res.json({
                 status: false,
@@ -166,7 +159,7 @@ router.post('/user_watched',
         previousWalletBalance: params.wallet.amount,
         newWalletBalance: newamount,
         amount: params.rewardamount,
-        created: admin.firestore.FieldValue.serverTimestamp(),
+        created: momenttimezone.tz("Asia/Karachi").valueOf(),
       };
 
       walletRef.doc(params.uid).collection('transactions').add(data).then(()=>{
@@ -189,7 +182,7 @@ router.post('/user_watched',
         video_id: params.video.id,
         video_thumbnail: params.video.thumbnail,
         video_url: params.video.url,
-        created: admin.firestore.FieldValue.serverTimestamp(),
+        created: momenttimezone.tz("Asia/Karachi").valueOf(),
       }
   
       watchRef.add(watchdata).then(()=>{
@@ -240,52 +233,152 @@ router.get('/get_user_watched', (req,res) => {
 
 
   // Get Watch Records For Table
-router.get('/get_user_watched_datatable', (req,res) => {
-    const params = req.params;
+// router.get('/get_user_watched_datatable', (req,res) => {
+//     const params = req.params;
   
   
-    let sort = params.sort;
-    let page = params.page;
-    let per_page = params.per_page;
-    let search = params.search;
-    let from = params.from;
-    let to = params.to;
-    let total = params.total;   
-    let lastPage = params.lastPage;    
+//     let sort = params.sort;
+//     let page = params.page;
+//     let per_page = params.per_page;
+//     let search = params.search;
+//     let from = params.from;
+//     let to = params.to;
+//     let total = params.total;   
+//     let lastPage = params.lastPage;    
   
   
   
-    watchRef.get().then((querySnapshot) => {
+//     watchRef.get().then((querySnapshot) => {
   
-      let data = [];
+//       let data = [];
   
-      querySnapshot.forEach((doc) => {
+//       querySnapshot.forEach((doc) => {
         
-        data.push({
-          id: doc.id,
-          ...doc.data()
-        })
-      })
+//         data.push({
+//           id: doc.id,
+//           ...doc.data()
+//         })
+//       })
   
-      res.json({
-        status:true,
-        data: data,
-        total: 20,
-        last_page: 4,
-        per_page: 5,
-        current_page: 1,
-        next_page_url: "https://api.coloredstrategies.com/cakes/fordatatable?sort=&page=2&per_page=5",
-        prev_page_url: "https://api.coloredstrategies.com/cakes/fordatatable?sort=&page=2&per_page=5",
-        from: 1,
-        to: 5,
-      })
+//       res.json({
+//         status:true,
+//         data: data,
+//         total: 20,
+//         last_page: 4,
+//         per_page: 5,
+//         current_page: 1,
+//         next_page_url: "https://api.coloredstrategies.com/cakes/fordatatable?sort=&page=2&per_page=5",
+//         prev_page_url: "https://api.coloredstrategies.com/cakes/fordatatable?sort=&page=2&per_page=5",
+//         from: 1,
+//         to: 5,
+//       })
       
-    }).catch((err)=>{
-      res.json({
-        status:false,
-        message:err
-      })
+//     }).catch((err)=>{
+//       res.json({
+//         status:false,
+//         message:err
+//       })
+//     })
+// })
+
+
+
+// Get Brands For Table
+router.get('/get_user_watched_datatable', (req,res) => {
+  
+  const params = req.query;
+  let length;
+  let projects = [];
+
+  //   SORT , PAGINATION , SEARCH PARAMS
+  let email = params.email;
+  let sort = params.sort;
+  let page = parseInt(params.page) || 1;
+  let per_page = parseInt(params.per_page) || 4;
+  let search = params.search;
+  let filter = params.filter_by;
+
+
+
+  watchRef.get().then((querySnapshot) => {
+
+  let data = [];
+
+  querySnapshot.forEach((doc) => {
+    
+    data.push({
+      id: doc.id,
+      ...doc.data()
     })
+  })
+
+
+  length = data.length;
+
+  let from = (page - 1) * per_page + 1;
+  let to = from + per_page <= length ? from + per_page - 1 : length;
+  console.log("from -> ", from);
+  console.log("to -> ", to);
+  let current_page = page;
+  let last_page =
+    length % per_page == 0
+      ? length / per_page
+      : Math.floor(length / per_page) + 1;
+  console.log("last_page -> ", last_page);
+  let total = length;
+  let next_page_url;
+  
+  console.log("length -> ", length);
+
+  // Sort if sort is passed
+  if (sort) {
+    data.sort((a, b) =>
+      a[sort] > b[sort] ? 1 : b[sort] > a[sort] ? -1 : 0
+    );
+  }
+
+  // Search if search is passed
+  if (search) {
+    var lowSearch = search.toLowerCase();
+    data = data.filter((obj) =>
+      Object.values(obj).some((val) =>
+        String(val).toLowerCase().includes(lowSearch)
+      )
+    );
+    // projects = projects.filter((obj) => JSON.stringify(obj).toLowerCase().includes(search.toLowerCase()));
+  }
+
+  
+  let sortedprojects = data.sort(function (a, b) {
+    return b.created - a.created;
+  });
+
+  sortedprojects = sortedprojects.slice(from - 1, to);
+
+
+  let final = {
+    status: true,
+    total,
+    from,
+    to,
+    per_page,
+    current_page,
+    last_page,
+    items: sortedprojects,
+  }
+
+  console.log('final -> ', final);
+
+ 
+
+  res.json(final)
+  
+}).catch((err)=>{
+  res.json({
+    status:false,
+    message:err
+  })
+})
 })
 
 
