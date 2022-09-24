@@ -78,7 +78,8 @@ app.use("/fcm", require("./api/fcm/fcm"));
 // Tasks 
 app.use("/tasks", require("./api/tasks/tasks"));
 
-
+// Exports 
+app.use("/exports", require("./api/export/index"));
 
 
 // Video

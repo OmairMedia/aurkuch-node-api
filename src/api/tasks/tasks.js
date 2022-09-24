@@ -1986,57 +1986,6 @@ router.post('/approve_aurkuch_channel_image',
 } 
 );
 
-// Track Users
-router.post('/track_user', 
-// Check If Already Exist 
-(req,res,next) => {
-  const body = req.body;
-
-  trackingRef.orderByChild('uid').equalTo(body.uid).once('value', (snapshot) => {
-    if(snapshot.val()) {
-      let exists = false;
-
-      snapshot.forEach((x)=>{
-        if(x.task_id === body.task_id) {
-          exists = true;
-        }
-      })
-
-      if(exists) {
-        res.json({
-          status:false,
-          error: 'already tracked this user and task!'
-        })
-      } else {
-        next()
-      }
-    } else {
-       next()
-    }
-  })
-},
-(req,res) => {
-  const body = req.body;
-
-  let newTrackRef = trackingRef.push();
-
-  newTrackRef.set({
-    uid: body.uid,
-    task_id: body.task_id,
-    created: moment().valueOf() 
-  }).then(()=>{
-      res.json({
-        status:true,
-        message: 'tracked !'
-      })
-  }).catch((err)=>{
-      res.json({
-        status:false,
-        error:err
-      })
-  })
-})
-
 
 
 function fileUpload(file, name, dir, filetype, callback) {

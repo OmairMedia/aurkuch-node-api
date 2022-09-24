@@ -33,7 +33,7 @@ router.get('/get_profile', (req,res) => {
    
   })
 
-  // Edit Profile
+// Edit Profile
 router.post('/edit_profile', (req,res) => {
     const params = req.body;
 
@@ -68,7 +68,7 @@ router.post('/edit_profile', (req,res) => {
     //     error:err.message
     //   })
     // })
-  })
+})
 
 
 router.post('/edit_profile_image', 
@@ -141,6 +141,29 @@ router.post('/edit_profile_image',
 }
 )  
 
+
+// Add/Edit Phone Nnumer
+router.post("/add_phone", 
+
+// Update User Profile
+(req,res) => {
+  const body = req.body;
+
+  admin.auth().updateUser(body.phone, {
+    phoneNumber: body.phone
+  }).then(()=>{
+    res.json({
+      status:true,
+      message: 'Phone Number Updated!'
+    })
+  }).catch((err) => {
+    res.json({
+      status:false,
+      error:err.message
+    })
+  })
+  
+})
 
 
   function filesCheck(obj, errors) {

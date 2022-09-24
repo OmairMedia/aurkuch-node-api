@@ -8,7 +8,8 @@ const momenttimezone = require("moment-timezone");
 // Get Brands For Table
 router.get('/get_wallets_datatable', (req,res) => {
   
-  const params = req.query;
+  try {
+    const params = req.query;
   let length;
   let projects = [];
 
@@ -20,15 +21,15 @@ router.get('/get_wallets_datatable', (req,res) => {
   let search = params.search;
   let filter = params.filter_by;
 
-  walletRef.once((querySnapshot) => {
+  walletRef.once('value',(querySnapshot) => {
 
    if(querySnapshot.val()) {
     let data = [];
 
     querySnapshot.forEach((doc) => {
       data.push({
-        id: doc.id,
-        ...doc.data()
+        id: doc.key,
+        ...doc.val()
       })
     })
   
@@ -105,11 +106,20 @@ router.get('/get_wallets_datatable', (req,res) => {
    }
   
 }).catch((err)=>{
+  console.log(err);
   res.json({
     status:false,
     message:err
   })
 })
+  } catch (err) {
+  console.log(err);
+
+    res.json({
+      status:false,
+      message:err
+    })
+  }
 })
 
 
