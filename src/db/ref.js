@@ -42,6 +42,9 @@ const notificationsRef = db.ref("notifications");
 // Tracking
 const trackingRef = db.ref("track");
 
+// Otps
+const otpRef = db.ref("otp");
+
 module.exports = {
   userRef,
   walletRef,
@@ -58,5 +61,6 @@ module.exports = {
   incompleteTasksRef,
   notificationsRef,
   rejectedTasksRef,
-  trackingRef
+  trackingRef,
+  otpRef
 };

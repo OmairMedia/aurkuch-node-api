@@ -1,5 +1,8 @@
 {
   "name": "aurkuch-api",
+  "engines": {
+    "node": "16.x"
+  },
   "version": "1.2.0",
   "description": "Aur Kuch",
   "main": "index.js",
@@ -18,13 +21,16 @@
   "license": "MIT",
   "dependencies": {
     "@google-cloud/storage": "^5.20.5",
+    "@nuintun/qrcode": "^3.3.0",
     "axios": "^0.22.0",
     "bcrypt-nodejs": "0.0.3",
     "cors": "^2.8.5",
     "cron": "^1.8.2",
+    "crypto": "^1.0.1",
     "csurf": "^1.11.0",
     "dotenv": "^10.0.0",
     "ejs": "^3.1.6",
+    "encrypt-rsa": "^2.1.2",
     "excel4node": "^1.8.0",
     "express": "^4.17.1",
     "express-fileupload": "^1.4.0",
@@ -34,15 +40,22 @@
     "generate-password": "^1.7.0",
     "helmet": "^4.6.0",
     "html-to-text": "^8.1.0",
+    "jimp": "^0.16.2",
     "juice": "^8.0.0",
     "lodash": "^4.17.21",
     "moment-timezone": "^0.5.34",
     "morgan": "^1.10.0",
+    "node-rsa": "^1.1.1",
     "node-schedule": "^2.0.0",
     "nodemailer": "^6.6.5",
     "order-no": "^1.0.3",
+    "pdfkit": "^0.13.0",
+    "phone": "^3.1.28",
     "qrcode": "^1.5.0",
+    "qrcode-decoder": "^0.3.1",
+    "qrcode-reader": "^1.0.4",
     "string-template": "^1.0.0",
+    "validate-phone-number-node-js": "0.0.1",
     "yup": "^0.32.11"
   },
   "devDependencies": {

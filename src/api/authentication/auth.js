@@ -31,7 +31,7 @@ router.post(
             console.log('Got User')
             res.json({
               status:true,
-              message: 'Ok !'
+              message: 'Ok!'
             })
           } 
         } else {
@@ -120,6 +120,125 @@ router.post(
 
 
 
+// Register User
+router.post(
+  "/simple-register",
+  // Check User
+  (req, res, next) => {
+    const params = req.body;
+
+    try {
+      admin.auth().getUserByEmail(params.email).then((userSnapshot)=>{
+        res.json({
+          status:false,
+          error:'User already exist with this email!'
+        })
+      }).catch((err)=>{
+        if(err.code === "auth/user-not-found") {
+           next();
+        } else {
+          console.log(err);
+          res.json({
+            status:false,
+            error:err
+          })
+        }
+        
+      })
+    } catch (err) {
+      console.log(err);
+      res.json({
+        status:false,
+        error:err
+      })
+    }
+  },
+  // Register User
+  (req, res) => {
+    const params = req.body;
+    
+    admin.auth().createUser({
+      email: params.email,
+      emailVerified: false,
+      phoneNumber: params.phoneNumber,
+      password: params.password,
+      displayName: params.displayName,
+      disabled: false,
+    })
+    .then((userRecord) => {
+      // See the UserRecord reference doc for the contents of userRecord.
+      let uid = userRecord.uid;
+      
+      let data = {
+        id: uid,
+        email: params.email,
+        phone: params.phoneNumber,
+        emailVerified: false,
+        displayName: params.displayName,
+        created: momenttimezone.tz("Asia/Karachi").valueOf(),
+        disabled: false,
+        googleAuthenticated: false,
+        channelSubscribed: false,
+        phoneVerified:false,
+        type: "user",
+        blocked:false,
+      };
+      console.log('data -> ',data);
+
+      userRef
+         .child(uid)
+         .set(data)
+         .then(() => {
+           // Create Wallet
+           walletRef
+             .child(uid)
+             .set({
+               id: uid,
+               email: params.email,
+               fullname: params.displayName,
+               amount: 0,
+               transactions: [],
+               created: momenttimezone.tz("Asia/Karachi").valueOf(),
+               blocked:false,
+               lastUpdated: null
+             })
+             .then(() => {
+               res.json({
+                 status: true,
+                 message: "User successfully created!",
+               });
+             })
+             .catch((err) => {
+              console.log('err -> ',err)
+
+               res.json({
+                 status: false,
+                 error: err.message,
+               });
+             });
+         })
+         .catch((err) => {
+          console.log('err -> ',err)
+           res.json({
+             status: false,
+             message: err,
+           });
+         });
+
+    })
+    .catch((err) => {
+      console.log(err);
+          res.json({
+            status:false,
+            error:err
+          })
+    });
+  
+  }
+);
+
+
+
 // Create Admin
 router.post("/create_admin", (req, res) => {
   const params = req.body;
@@ -191,6 +310,29 @@ router.post("/create_admin", (req, res) => {
   // .catch((error) => {
   //     console.log('Error fetching user data:', error);
   // });
+});
+
+
+// channelSubscribed api
+router.post("/channelSubscribed", (req, res) => {
+  const params = req.body;
+  
+  userRef
+    .child(params.id)
+    .once('value', (snapshot) => {
+      if(snapshot.val()) {
+        const user = snapshot.val();
+        res.json({
+          status:true,
+          data:user
+        })
+      } else {
+        res.json({
+          status:false,
+          error:'User not found!'
+        })
+      }
+    })
 });
 
 module.exports = router;

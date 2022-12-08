@@ -81,6 +81,9 @@ app.use("/tasks", require("./api/tasks/tasks"));
 // Exports 
 app.use("/exports", require("./api/export/index"));
 
+// Payments 
+app.use("/payments", require("./api/payments/payment"));
+
 
 // Video
 // app.use("/video", require("./api/videos/videos"));

@@ -1,6 +1,10 @@
 {
  "easypaisa": {
     "client_id": "5f5c551f-8cd5-497a-b598-8875e7b1fc44",
-    "client_secret": "B8kU1dI4tF2mH1gB3wJ4xE2kB5rD6xQ2fG5qL2uB6mI1rP7lX3"
+    "client_secret": "B8kU1dI4tF2mH1gB3wJ4xE2kB5rD6xQ2fG5qL2uB6mI1rP7lX3",
+    "rsa": "631f96900cf28b9421398857"
+ },
+ "brandedsms" : {
+   "apiKey": "125db4b8ff40606d54fea67d4471e84e6c"
  }
 }

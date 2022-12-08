@@ -133,5 +133,24 @@ router.get('/get_users_datatable', (req,res) => {
   }
 })
 
+// Get User
+router.get('/get_user', (req,res,next) => {
+  const {uid} = req.query;
+
+  admin.auth().getUser(uid).then((user)=>{
+    if(user) {
+      res.json({
+        status:true,
+        data:user
+      })
+    } else {
+       res.json({
+        status:false,
+        error:"User not found!"
+       })
+    }
+  })
+})
+
 
 module.exports = router;
