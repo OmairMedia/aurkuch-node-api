@@ -129,16 +129,28 @@ router.post('/get_single_wallet', (req,res,next) => {
   walletRef.child(params.id).once('value', (snapshot) => {
     if(snapshot.val()) {
       const wallet = snapshot.val();
+      const transactions = wallet.transactions ? wallet.transactions : [];
+      let transactionsSorted;
 
+      if(transactions.length > 0) {
+        transactionsSorted = transactions.sort(function (a, b) {
+          return b.created - a.created;
+        });
+      } else {
+        transactionsSorted = [];
+      }
       
       res.json({
         status:true,
-        data: snapshot.val()
+        data: {
+          ...wallet,
+          transactions: transactionsSorted
+        }
       })
     } else {
       res.json({
         status:false,
-        error : "Wallet Not Found !"
+        error : "Wallet Not Found!"
       })
     }
   })
