@@ -154,7 +154,6 @@ router.post("/add_task",
        })
           break;
 
-
       case "promocode":
             newTasks.set({
                 id: newTasks.key,
@@ -1121,6 +1120,41 @@ router.post('/complete_task',
       })
     })
   },
+  // Check User Completed Task Before
+  (req,res,next) => {
+    const body = req.body;
+    
+    try {
+      tasksRecordsRef.orderByChild("uid").equalTo(body.uid).once('value', (snapshot) => {
+        if(snapshot.val()) {
+          let tasks = [];
+          let taskCompleted = false;
+
+          snapshot.forEach((x)=>{
+            if(x.val().task_id === body.task_id) {
+              taskCompleted = true;
+            }
+          })
+
+          if(taskCompleted) {
+            res.json({
+              status:false,
+              error: 'You have completed this task earlier!'
+            })
+          } else {
+            next(); 
+          }
+        } else {
+          next();
+        }
+      })  
+    } catch (err) {
+      res.json({
+        status:false,
+        error:err
+      })
+    }
+  },
   // Minus Task Count
   (req,res,next) => {
     const body = req.body;
@@ -1351,15 +1385,16 @@ router.post('/complete_promocode_task',
         req.body.task = task;
         
         if(task.type === 'promocode') {
-          let promocodes_list = task.promocodes;
-          if(String(promocodes_list).includes(body.promocode)) {
-            next();
-          } else {
-            res.json({
-              status:false,
-              error: 'Promocode not found!'
-            })
-          }
+          next();
+          // let promocodes_list = task.promocodes;
+          // if(String(promocodes_list).includes(body.promocode)) {
+            
+          // } else {
+          //   res.json({
+          //     status:false,
+          //     error: 'Promocode not found!'
+          //   })
+          // }
         } else {
           res.json({
             status:false,
@@ -1380,6 +1415,41 @@ router.post('/complete_promocode_task',
       })
     })
   },
+  // Check User Completed Task Before
+  (req,res,next) => {
+    const body = req.body;
+
+    try {
+      tasksRecordsRef.orderByChild("uid").equalTo(body.uid).once('value', (snapshot) => {
+        if(snapshot.val()) {
+          let tasks = [];
+          let taskCompleted = false;
+  
+          snapshot.forEach((x)=>{
+            if(x.val().task_id === body.task_id) {
+              taskCompleted = true;
+            }
+          })
+  
+          if(taskCompleted) {
+            res.json({
+              status:false,
+              error: 'You have completed this task earlier!'
+            })
+          } else {
+            next(); 
+          }
+        } else {
+          next();
+        }
+      })  
+    } catch (err) {
+      res.json({
+        status:false,
+        error:err
+      })
+    }
+  },
   // Minus Task Count
   (req,res,next) => {
     const body = req.body;
@@ -1387,7 +1457,7 @@ router.post('/complete_promocode_task',
     if(parseInt(body.task.count) === 0) {
       res.json({
         status:false,
-        error: 'This Task Is Not Available To You!'
+        error: 'This Task Has Been Ended. You can no longer avail it!'
       })
     } else {
       tasksRef.child(body.task_id).update({
@@ -1397,8 +1467,8 @@ router.post('/complete_promocode_task',
         next();
     }).catch((err)=>{
         res.json({
-        status:false,
-        error:err
+          status:false,
+          error:err
         })
     })
     }
@@ -1570,30 +1640,30 @@ router.post('/complete_promocode_task',
 
 // Subscribe Task - Image Upload
 router.post('/upload_subscribe_image', 
-// Get User 
-(req,res,next) => {
-  const params = req.body;
-  
-  userRef.child(params.uid).once('value', (snapshot) => {
-    if(snapshot.val()) {
-       let user = snapshot.val();
-       if(user.channelSubscribed) {
+  // Get User 
+  (req,res,next) => {
+    const params = req.body;
+    
+    userRef.child(params.uid).once('value', (snapshot) => {
+      if(snapshot.val()) {
+        let user = snapshot.val();
+        if(user.channelSubscribed) {
+          res.json({
+            status:false,
+            error: 'You have already completed this task!'
+          })
+        } else {
+          req.body.user = user;
+          next()
+        }
+      } else {
         res.json({
           status:false,
-          error: 'You have already completed this task!'
+          error: 'User not found!'
         })
-       } else {
-        req.body.user = user;
-        next()
-       }
-    } else {
-      res.json({
-        status:false,
-        error: 'User not found!'
-      })
-    }
-  })
-},
+      }
+    })
+  },
   // Get Task
   (req,res,next) => {
     
@@ -1953,6 +2023,41 @@ router.post('/upload_app_image',
          error: err
        })
   })
+},
+// Check User Completed Task Before
+(req,res,next) => {
+    const body = req.body;
+    
+    try {
+      tasksRecordsRef.orderByChild("uid").equalTo(body.uid).once('value', (snapshot) => {
+        if(snapshot.val()) {
+          let tasks = [];
+          let taskCompleted = false;
+  
+          snapshot.forEach((x)=>{
+            if(x.val().task_id === body.task_id) {
+              taskCompleted = true;
+            }
+          })
+  
+          if(taskCompleted) {
+            res.json({
+              status:false,
+              error: 'You have completed this task earlier!'
+            })
+          } else {
+            next(); 
+          }
+        } else {
+          next();
+        }
+      })  
+    } catch (err) {
+      res.json({
+        status:false,
+        error:err
+      })
+    }
 },
 // Upload Image
 (req,res,next) => {
