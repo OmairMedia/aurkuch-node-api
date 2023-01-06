@@ -17,9 +17,6 @@ const admin = firebase_admin.initializeApp({
   databaseURL: "https://aurkuch-982e5-default-rtdb.asia-southeast1.firebasedatabase.app/",
 });
 
-
-
-
 // Initialize The App
 const app = express();
 

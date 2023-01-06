@@ -1121,6 +1121,40 @@ router.post('/complete_task',
       })
     })
   },
+  // Check User Completed This Task Before
+  (req,res,next) => {
+    const body = req.body;
+
+    try {
+      tasksRecordsRef.orderByChild('uid').equalTo(body.uid).once('value', (snapshot) => {
+        if(snapshot.val()) {
+          let taskCompletedBefore = false;
+          snapshot.forEach((x) => {
+            if(x.val().task_id === body.task_id) {
+              taskCompletedBefore = true;
+            }
+          });
+
+          if(taskCompletedBefore) {
+            res.json({
+              status:false,
+              error: 'You Have Completed This Task Before!'
+            })
+          } else {
+            next();
+          }           
+        } else {
+           next();
+        }
+      })
+    } catch (err) {
+      res.json({
+        status:false,
+        error: err
+      })
+    }
+
+  },
   // Minus Task Count
   (req,res,next) => {
     const body = req.body;
@@ -1380,6 +1414,40 @@ router.post('/complete_promocode_task',
       })
     })
   },
+  // Check User Completed This Task Before
+  (req,res,next) => {
+    const body = req.body;
+
+    try {
+      tasksRecordsRef.orderByChild('uid').equalTo(body.uid).once('value', (snapshot) => {
+        if(snapshot.val()) {
+          let taskCompletedBefore = false;
+          snapshot.forEach((x) => {
+            if(x.val().task_id === body.task_id) {
+              taskCompletedBefore = true;
+            }
+          });
+
+          if(taskCompletedBefore) {
+            res.json({
+              status:false,
+              error: 'You Have Completed This Task Before!'
+            })
+          } else {
+            next();
+          }           
+        } else {
+          next();
+        }
+      })
+    } catch (err) {
+      res.json({
+        status:false,
+        error: err
+      })
+    }
+
+  },
   // Minus Task Count
   (req,res,next) => {
     const body = req.body;
@@ -1544,7 +1612,7 @@ router.post('/complete_promocode_task',
 
         send_notification_to_single_user(token, {
           title: "Task Has Been Completed!",
-          body: `You have been rewarded for ${body.task.reward} for completing ${body.task.name}!`,
+          body: `You have been rewarded ${body.task.reward} Rps for completing ${body.task.name} task!`,
           routes: "",
         }).then(()=>{
           res.json({
@@ -1953,6 +2021,40 @@ router.post('/upload_app_image',
          error: err
        })
   })
+},
+// Check User Completed This Task Before
+(req,res,next) => {
+    const body = req.body;
+
+    try {
+      tasksRecordsRef.orderByChild('uid').equalTo(body.uid).once('value', (snapshot) => {
+        if(snapshot.val()) {
+          let taskCompletedBefore = false;
+          snapshot.forEach((x) => {
+            if(x.val().task_id === body.task_id) {
+              taskCompletedBefore = true;
+            }
+          });
+
+          if(taskCompletedBefore) {
+            res.json({
+              status:false,
+              error: 'You Have Completed This Task Before!'
+            })
+          } else {
+            next();
+          }           
+        } else {
+           next();
+        }
+      })
+    } catch (err) {
+      res.json({
+        status:false,
+        error: err
+      })
+    }
+
 },
 // Upload Image
 (req,res,next) => {
@@ -2852,6 +2954,40 @@ router.post('/upload_aurkuch_channel_image',
          error: err
        })
   })
+},
+// Check User Completed This Task Before
+(req,res,next) => {
+  const body = req.body;
+
+  try {
+    tasksRecordsRef.orderByChild('uid').equalTo(body.uid).once('value', (snapshot) => {
+      if(snapshot.val()) {
+        let taskCompletedBefore = false;
+        snapshot.forEach((x) => {
+          if(x.val().task_id === body.task_id) {
+            taskCompletedBefore = true;
+          }
+        });
+
+        if(taskCompletedBefore) {
+          res.json({
+            status:false,
+            error: 'You Have Completed This Task Before!'
+          })
+        } else {
+          next();
+        }           
+      } else {
+         next();
+      }
+    })
+  } catch (err) {
+    res.json({
+      status:false,
+      error: err
+    })
+  }
+
 },
 // Upload Image
 (req,res,next) => {
