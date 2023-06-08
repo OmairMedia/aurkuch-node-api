@@ -105,13 +105,13 @@ router.get('/get_wallets_datatable', (req,res) => {
       res.json(final)
    }
   
-}).catch((err)=>{
-  console.log(err);
-  res.json({
-    status:false,
-    message:err
-  })
-})
+    }).catch((err)=>{
+      console.log(err);
+      res.json({
+        status:false,
+        message:err
+      })
+    })
   } catch (err) {
   console.log(err);
 
