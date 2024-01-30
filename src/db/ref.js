@@ -14,7 +14,6 @@ const pendingTasksRef = db.ref("pending_tasks");
 const rejectedTasksRef = db.ref("rejected_tasks");
 const incompleteTasksRef = db.ref("incomplete_tasks");
 
-
 // Brand
 const brandRef = db.ref("brands");
 
@@ -45,6 +44,9 @@ const trackingRef = db.ref("track");
 // Otps
 const otpRef = db.ref("otp");
 
+// Withdraw Requests
+const withdrawRequestsRef = db.ref("withdraw_requests");
+
 module.exports = {
   userRef,
   walletRef,
@@ -62,5 +64,6 @@ module.exports = {
   notificationsRef,
   rejectedTasksRef,
   trackingRef,
-  otpRef
+  otpRef,
+  withdrawRequestsRef,
 };
