@@ -206,6 +206,171 @@ router.get("/get_withdraw_datatable", (req, res) => {
   }
 });
 
+// Create Withdrawel Request
+router.post(
+  "/create_withdraw_request",
+  // Check if withdrawal request exists
+  (req, res, next) => {
+    const body = req.body;
+
+    try {
+      withdrawRequestsRef
+        .orderByChild("user_id")
+        .equalTo(body.uid)
+        .once("value", (snapshot) => {
+          if (snapshot.val()) {
+            let havePendingRequest = false;
+            snapshot.forEach((x) => {
+              if (x.val().status === "pending") {
+                havePendingRequest = true;
+              }
+            });
+
+            if (havePendingRequest) {
+              res.json({
+                status: false,
+                error: "A Withdrawal Request Already Exists For This User!",
+              });
+            } else {
+              next();
+            }
+          }
+        });
+    } catch (err) {
+      console.log("err -> ", err);
+      res.json({
+        status: false,
+        error: err,
+      });
+    }
+  },
+  // Get User
+  (req, res, next) => {
+    const body = req.body;
+
+    try {
+      admin
+        .auth()
+        .getUser(body.uid)
+        .then((user) => {
+          req.body.user = user;
+          next();
+        })
+        .catch((err) => {
+          res.json({
+            status: false,
+            error: err,
+          });
+        });
+    } catch (err) {
+      res.json({
+        status: false,
+        error: err,
+      });
+    }
+  },
+  // Get User's Wallet
+  (req, res, next) => {
+    const body = req.body;
+
+    try {
+      walletRef
+        .child(body.uid)
+        .once("value", (snapshot) => {
+          if (snapshot.val()) {
+            const Wallet = snapshot.val();
+            req.body.wallet = Wallet;
+
+            next();
+            // res.json({
+            //   status: false,
+            //   data: body,
+            // });
+          } else {
+            res.json({
+              status: false,
+              error: "Wallet Not Found!",
+            });
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          res.json({
+            status: false,
+            error: err,
+          });
+        });
+    } catch (err) {
+      console.log(err);
+      res.json({
+        status: false,
+        error: err,
+      });
+    }
+  },
+  // Create Withdrawel Request
+  (req, res, next) => {
+    const body = req.body;
+
+    try {
+      let newCompletedTask = withdrawRequestsRef.push();
+      let data = {
+        id: newCompletedTask.key,
+        uid: body.uid,
+        user_id: body.uid,
+        email: body.user.email,
+        username: body.user.displayName,
+        amount: body.wallet.amount,
+        status: "pending",
+        created: momenttimezone.tz("Asia/Karachi").valueOf(),
+        bank_details: "",
+        easypaisa: "",
+        jazzcash: "",
+        status: "pending",
+      };
+
+      // console.log("data -> ", data);
+
+      newCompletedTask
+        .set(data)
+        .then(() => {
+          let newNotification = notificationsRef.child(body.uid).push();
+          newNotification
+            .set({
+              id: newNotification.key,
+              title: `${body.user.displayName} has created a withdrawel request!`,
+              body: `Withdrawel request will be reviewed soon, you will be notified on approval`,
+            })
+            .then(() => {
+              res.json({
+                status: true,
+                message: "Withdrawel Request Has Been Created!",
+              });
+              // next();
+            })
+            .catch((err) => {
+              res.json({
+                status: false,
+                error: err.message,
+              });
+            });
+        })
+        .catch((err) => {
+          res.json({
+            status: false,
+            error: err.message,
+          });
+        });
+    } catch (err) {
+      console.log(err);
+      res.json({
+        status: false,
+        error: err,
+      });
+    }
+  }
+);
+
 // Approve Withdraw Request
 router.post(
   "/approve_withdraw_request",
@@ -411,132 +576,50 @@ router.post(
 );
 
 // Disapprove Withdraw Request
-router.post("/reject_withdraw_request");
-
-// Create Withdrawel Request
 router.post(
-  "/create_withdraw_request",
-  // Get User
+  "/reject_withdraw_request",
+  // Get Request
   (req, res, next) => {
     const body = req.body;
 
-    try {
-      admin
-        .auth()
-        .getUser(body.uid)
-        .then((user) => {
-          req.body.user = user;
-          next();
-        })
-        .catch((err) => {
-          res.json({
-            status: false,
-            error: err,
-          });
+    withdrawRequests.child(body.id).once("value", (snapshot) => {
+      if (snapshot.val()) {
+        req.body.request = snapshot.val();
+        next();
+      } else {
+        res.json({
+          status: false,
+          error: "Error",
         });
-    } catch (err) {
-      res.json({
-        status: false,
-        error: err,
-      });
-    }
+      }
+    });
   },
-  // Get User's Wallet
+  // Check Request
   (req, res, next) => {
     const body = req.body;
+    const request = body.request;
 
-    try {
-      walletRef
-        .child(body.uid)
-        .once("value", (snapshot) => {
-          if (snapshot.val()) {
-            const Wallet = snapshot.val();
-            req.body.wallet = Wallet;
-
-            next();
-            // res.json({
-            //   status: false,
-            //   data: body,
-            // });
-          } else {
-            res.json({
-              status: false,
-              error: "Wallet Not Found!",
-            });
-          }
+    if (request.status === "pending") {
+      withdrawRequests
+        .update({
+          status: "rejected",
         })
-        .catch((err) => {
-          console.log(err);
-          res.json({
-            status: false,
-            error: err,
-          });
-        });
-    } catch (err) {
-      console.log(err);
-      res.json({
-        status: false,
-        error: err,
-      });
-    }
-  },
-  // Create Withdrawel Request
-  (req, res, next) => {
-    const body = req.body;
-
-    try {
-      let newCompletedTask = withdrawRequestsRef.push();
-      let data = {
-        id: newCompletedTask.key,
-        uid: body.uid,
-        user_id: body.uid,
-        email: body.user.email,
-        username: body.user.displayName,
-        amount: body.wallet.amount,
-        status: "pending",
-        created: momenttimezone.tz("Asia/Karachi").valueOf(),
-        bank_details: "",
-        easypaisa: "",
-        jazzcash: "",
-      };
-
-      // console.log("data -> ", data);
-
-      newCompletedTask
-        .set(data)
         .then(() => {
-          let newNotification = notificationsRef.child(body.uid).push();
-          newNotification
-            .set({
-              id: newNotification.key,
-              title: `${body.user.displayName} has created a withdrawel request!`,
-              body: `Withdrawel request will be reviewed soon, you will be notified on approval`,
-            })
-            .then(() => {
-              res.json({
-                status: true,
-                message: "Withdrawel Request Has Been Created!",
-              });
-              // next();
-            })
-            .catch((err) => {
-              res.json({
-                status: false,
-                error: err.message,
-              });
-            });
+          res.json({
+            status: true,
+            message: "Request has been rejected!",
+          });
         })
         .catch((err) => {
           res.json({
             status: false,
-            error: err.message,
+            error: err,
           });
         });
-    } catch (err) {
-      console.log(err);
+    } else {
       res.json({
         status: false,
-        error: err,
+        error: `Request has status of ${request.status}!`,
       });
     }
   }

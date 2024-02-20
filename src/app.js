@@ -14,7 +14,8 @@ const serviceAccount = require("./config/serviceAccount.json");
 
 const admin = firebase_admin.initializeApp({
   credential: firebase_admin.credential.cert(serviceAccount),
-  databaseURL: "https://aurkuch-982e5-default-rtdb.asia-southeast1.firebasedatabase.app/",
+  databaseURL:
+    "https://aurkuch-982e5-default-rtdb.asia-southeast1.firebasedatabase.app/",
 });
 
 // Initialize The App
@@ -28,25 +29,22 @@ app.use(fileUpload());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-
 // --------  Middlewares  --------
 const middlewares = require("./middleware/index");
 
-
-app.get('/', (req,res) => { 
-   res.json({
-     message: "running"
-   })
-})
-
-app.post('/', (req,res) => { 
+app.get("/", (req, res) => {
   res.json({
-    message: "running"
-  })
-})
+    message: "running",
+  });
+});
 
+app.post("/", (req, res) => {
+  res.json({
+    message: "running",
+  });
+});
 
-// Authentication 
+// Authentication
 app.use("/auth", require("./api/authentication/auth"));
 
 // Profile
@@ -58,29 +56,26 @@ app.use("/wallet", require("./api/wallet/wallet"));
 // Brand
 app.use("/brand", require("./api/brand/brand"));
 
-
 // Settings
 app.use("/settings", require("./api/settings/settings"));
 
 // Slider
 app.use("/slider", require("./api/promotionalSlider/slider"));
 
-
-// Users 
+// Users
 app.use("/users", require("./api/users/users"));
 
-// FCM 
+// FCM
 app.use("/fcm", require("./api/fcm/fcm"));
 
-// Tasks 
+// Tasks
 app.use("/tasks", require("./api/tasks/tasks"));
 
-// Exports 
+// Exports
 app.use("/exports", require("./api/export/index"));
 
-// Payments 
+// Payments
 app.use("/payments", require("./api/payments/payment"));
-
 
 // Video
 // app.use("/video", require("./api/videos/videos"));
@@ -88,13 +83,10 @@ app.use("/payments", require("./api/payments/payment"));
 // Survey
 // app.use("/survey", require("./api/survey/survey"));
 
-// Admin 
+// Admin
 // app.use("/admin", require("./api/adminpanel/admin"));
-
 
 app.use(middlewares.notFound);
 app.use(middlewares.errorHandler);
-
-
 
 module.exports = app;
