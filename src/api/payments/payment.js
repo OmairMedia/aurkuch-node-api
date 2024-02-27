@@ -323,9 +323,9 @@ router.post(
         amount: body.wallet.amount,
         status: "pending",
         created: momenttimezone.tz("Asia/Karachi").valueOf(),
-        bank_details: "",
-        easypaisa: "",
-        jazzcash: "",
+        bank_details: body.bank_details,
+        easypaisa: body.easypaisa,
+        jazzcash: body.jazzcash,
         status: "pending",
       };
 
