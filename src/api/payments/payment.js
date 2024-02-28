@@ -213,6 +213,8 @@ router.post(
   (req, res, next) => {
     const body = req.body;
 
+    console.log("body -> ", body);
+
     try {
       withdrawRequestsRef
         .orderByChild("user_id")
@@ -221,7 +223,7 @@ router.post(
           if (snapshot.val()) {
             let havePendingRequest = false;
             snapshot.forEach((x) => {
-              if (x.val().status === "pending") {
+              if (x.val()?.status === "pending") {
                 havePendingRequest = true;
               }
             });
@@ -232,8 +234,11 @@ router.post(
                 error: "A Withdrawal Request Already Exists For This User!",
               });
             } else {
+              console.log("withdrawel request checked!");
               next();
             }
+          } else {
+            next();
           }
         });
     } catch (err) {
@@ -247,6 +252,8 @@ router.post(
   // Get User
   (req, res, next) => {
     const body = req.body;
+
+    console.log("Get User!");
 
     try {
       admin
@@ -272,6 +279,8 @@ router.post(
   // Get User's Wallet
   (req, res, next) => {
     const body = req.body;
+
+    console.log("Get User Wallet!");
 
     try {
       walletRef
@@ -312,6 +321,8 @@ router.post(
   (req, res, next) => {
     const body = req.body;
 
+    console.log("Create Withdrawel Request!");
+
     try {
       let newCompletedTask = withdrawRequestsRef.push();
       let data = {
@@ -329,7 +340,7 @@ router.post(
         status: "pending",
       };
 
-      // console.log("data -> ", data);
+      console.log("data -> ", data);
 
       newCompletedTask
         .set(data)
